@@ -1,24 +1,36 @@
-var ResearchDAO = require("../data/research-dao").ResearchDAO;
-var needle = require('needle');
+const ResearchDAO = require("../data/research-dao").ResearchDAO;
+const needle = require("needle");
+const {
+    environmentalScripts
+} = require("../../config/config");
 
 function ResearchHandler(db) {
     "use strict";
 
-    var researchDAO = new ResearchDAO(db);
+    const researchDAO = new ResearchDAO(db);
 
-    this.displayResearch = function(req, res, next) {
-        
+    this.displayResearch = (req, res) => {
+
         if (req.query.symbol) {
-            var url = req.query.url+req.query.symbol; 
-            needle.get(url, function(error, newResponse) {
-                if (!error && newResponse.statusCode == 200)
-                    res.writeHead(200, {'Content-Type': 'text/html'});
-                    res.write('<h1>The following is the stock information you requested.</h1>\n\n');
-                    res.write('\n\n');
-                    res.write(newResponse.body);
-                    return res.end();
+            const url = req.query.url + req.query.symbol;
+            return needle.get(url, (error, newResponse, body) => {
+                if (!error && newResponse.statusCode === 200) {
+                    res.writeHead(200, {
+                        "Content-Type": "text/html"
+                    });
+                }
+                res.write("<h1>The following is the stock information you requested.</h1>\n\n");
+                res.write("\n\n");
+                if (body) {
+                    res.write(body);
+                }
+                return res.end();
             });
-        } else return res.render("research");
+        }
+
+        return res.render("research", {
+            environmentalScripts
+        });
     };
 
 }
